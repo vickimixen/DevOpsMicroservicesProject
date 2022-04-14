@@ -1,0 +1,92 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: repository-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: repository-service
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  minReadySeconds: 5
+  template:
+    metadata:
+      labels:
+        app: repository-service
+    spec:
+      containers:
+        - name: repository-service
+          image: gcr.io/PROJECT_ID/IMAGE:TAG
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: database-connection
+                  key: url
+            - name: SCHEDULING_SUBMISSION_URL
+              valueFrom:
+                secretKeyRef:
+                  name: scheduling-submission
+                  key: url
+            - name: ROCKET_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: rocket
+                  key: secret-key
+            - name: CORS_HOSTS
+              valueFrom:
+                secretKeyRef:
+                  name: cors
+                  key: hosts
+            - name: CORE_PRIVATE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: privatekey-name
+                  key: privatekey-key
+            - name: CORE_PUBLIC_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: pubkey-name
+                  key: pubkey-key
+          ports:
+            - containerPort: 8888
+          resources:
+            requests:
+              cpu: 100m
+            limits:
+              cpu: 100m
+              memory: "1Gi"
+        - name: cloud-sql-proxy
+          # It is recommended to use the latest version of the Cloud SQL proxy
+          # Make sure to update on a regular schedule!
+          image: gcr.io/cloudsql-docker/gce-proxy:1.19.0
+          command:
+            - "/cloud_sql_proxy"
+
+            # If connecting from a VPC-native GKE cluster, you can use the
+            # following flag to have the proxy connect over private IP
+            # TODO change to private IP
+            #- "-ip_address_types=PRIVATE"
+
+            # Replace DB_PORT with the port the proxy should listen on
+            # Defaults: MySQL: 3306, Postgres: 5432, SQLServer: 1433
+            - "-instances=autogradr-298811:europe-west1:autogradr-pg=tcp:5432"
+
+            - "-credential_file=/secrets/service_account.json"
+          securityContext:
+            # The default Cloud SQL proxy image runs as the
+            # "nonroot" user and group (uid: 65532) by default.
+            runAsNonRoot: true
+          volumeMounts:
+            - name: sa-key-volume
+              mountPath: /secrets/
+              readOnly: true
+      restartPolicy: Always
+      volumes:
+        - name: sa-key-volume
+          secret:
+            secretName: cloud-sql-sa-key
+status: { }

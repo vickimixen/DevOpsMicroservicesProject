@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: repository-service
+spec:
+  ports:
+    - name: "80"
+      port: 80
+      targetPort: 8888
+  selector:
+    app: repository-service
+status:
+  loadBalancer: {}

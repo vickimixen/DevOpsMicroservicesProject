@@ -1,0 +1,8 @@
+apiVersion: configuration.konghq.com/v1
+kind: KongPlugin
+metadata:
+  name: block-private-endpoint
+plugin: request-termination
+config:
+  status_code: 401
+  message: access forbidden!

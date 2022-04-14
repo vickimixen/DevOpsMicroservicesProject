@@ -1,0 +1,20 @@
+version: '3'
+services:
+  database:
+    image: "postgres"
+    env_file:
+      - database.env
+  repository-service:
+    image: gcr.io/${PROJECT_ID}/repository-service:${REPO_VERSION}
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    environment:
+      - CORE_PRIVATE_KEY=$CORE_PRIVATE_KEY
+      - CORE_PUBLIC_KEY=$CORE_PUBLIC_KEY
+    env_file:
+      - api.env
+    depends_on:
+      - database
+    ports:
+      - 8888:8888

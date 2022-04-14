@@ -1,0 +1,22 @@
+apiVersion: "extensions/v1beta1"
+kind: "Ingress"
+metadata:
+  name: autograder-kong-ingress-blocked
+  annotations:
+    plugins.konghq.com: "block-private-endpoint"
+    konghq.com/strip-path: "true"
+    kubernetes.io/ingress.class: kong
+spec:
+  tls:
+  rules:
+  - host: "api.legeserver.com"
+    http:
+      paths:
+        - path: /scheduling/api/v0/submissions # Block the submissions endpoints from being exposed
+          backend:
+            serviceName: "scheduling-service"
+            servicePort: 80
+        - path: /scheduling/api/v0/old/submissions # Block the submissions endpoints from being exposed
+          backend:
+            serviceName: "scheduling-service"
+            servicePort: 80

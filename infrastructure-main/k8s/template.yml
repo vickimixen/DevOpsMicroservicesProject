@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bear-bank-deployment
+  namespace: default
+  labels:
+    app: bear-bank
+spec:
+  replicas: 0
+  selector:
+    matchLabels:
+      app: bear-bank
+  template:
+    metadata:
+      labels:
+        app: bear-bank
+    spec:
+      containers:
+      - name: bear-bank
+        image: idreeskun/test-bear-image
+        ports:
+        - containerPort: 5000

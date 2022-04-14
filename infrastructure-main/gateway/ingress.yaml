@@ -1,0 +1,30 @@
+apiVersion: "extensions/v1beta1"
+kind: "Ingress"
+metadata:
+  name: "legeserver-ingress"
+  namespace: "default"
+  annotations:
+    konghq.com/strip-path: "true"
+    kubernetes.io/ingress.class: kong
+spec:
+  tls:
+  rules:
+  - host: "api.legeserver.com"
+    http:
+      paths:
+        - path: "/user"
+          backend:
+            serviceName: "userautograder"
+            servicePort: 80
+        - path: "/repo"
+          backend:
+            serviceName: "repository-service"
+            servicePort: 80
+        - path: "/assignment"
+          backend:
+            serviceName: "assignment-service"
+            servicePort: 80
+        - path: "/scheduling"
+          backend:
+            serviceName: "scheduling-service"
+            servicePort: 80

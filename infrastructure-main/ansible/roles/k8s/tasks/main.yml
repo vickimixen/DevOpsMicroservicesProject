@@ -1,0 +1,20 @@
+- name: Logging
+  debug:
+    msg: >
+      Starting up deployments...
+
+- name: Deploy OpenFaas
+  shell: |
+    curl -SLsf https://dl.get-arkade.dev/ | sudo sh
+    arkade install openfaas --load-balancer
+
+    curl -SLsf https://cli.openfaas.com | sudo sh
+    kubectl rollout status -n openfaas deploy/gateway
+
+    kubectl port-forward -n openfaas svc/gateway 8080:8080 & PASSWORD=$(kubectl get secret -n openfaas basic-auth -o jsonpath="{.data.basic-auth-password}" | base64 --decode; echo)
+    echo -n $PASSWORD | faas-cli login --username admin --password-stdin
+
+- name: Logging
+  debug:
+    msg: >
+      Installing necessary applications to Kubernetes cluster finished.
